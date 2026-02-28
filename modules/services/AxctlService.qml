@@ -108,20 +108,20 @@ Singleton {
                             class: win.app_id,
                             title: win.title,
                             workspace: { id: parseInt(win.workspace_id) || 0, name: win.workspace_id },
-                            monitor: parseInt(win.metadata.monitor_id) || 0,
+                            monitor: parseInt(win.metadata ? win.metadata.monitor_id : 0) || 0,
                             floating: win.is_floating,
                             fullscreen: win.is_fullscreen,
                             hidden: win.is_hidden,
                             mapped: true,
-                            at: [win.metadata?.x || 0, win.metadata?.y || 0],
-                            size: [win.metadata?.width || 100, win.metadata?.height || 100],
-                            xwayland: win.metadata?.xwayland || false,
+                            at: [win.metadata ? (win.metadata.x || 0) : 0, win.metadata ? (win.metadata.y || 0) : 0],
+                            size: [win.metadata ? (win.metadata.width || 100) : 100, win.metadata ? (win.metadata.height || 100) : 100],
+                            xwayland: (win.metadata ? win.metadata.xwayland : false) || false,
                             is_focused: win.is_focused || false,
                             focusHistoryID: newFocus
                         };
                     });
                     root.clients.values = mappedClients;
-                    let focused = mappedClients.find(w => w.address === root.focusedClient?.address) || mappedClients.find(w => w.is_focused) || null;
+                    let focused = mappedClients.find(w => w.address === (root.focusedClient ? root.focusedClient.address : undefined)) || mappedClients.find(w => w.is_focused) || null;
                     if (focused !== root.focusedClient) {
                         root.focusedClient = focused;
                     }
@@ -173,7 +173,7 @@ Singleton {
                         height: mon.height,
                         refreshRate: mon.refresh_rate,
                         scale: mon.scale,
-                        activeWorkspace: { id: parseInt(mon.metadata.active_workspace) || 0, name: mon.metadata.active_workspace }
+                        activeWorkspace: { id: parseInt(mon.metadata ? mon.metadata.active_workspace : 0) || 0, name: mon.metadata ? mon.metadata.active_workspace : "" }
                     }));
                     root.monitors.values = mappedMonitors;
                     let focused = mappedMonitors.find(m => m.focused) || null;
