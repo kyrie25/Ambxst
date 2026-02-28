@@ -5,7 +5,7 @@ import QtQuick
 import Quickshell
 import Quickshell.Io
 import Quickshell.Wayland
-import Quickshell.Hyprland
+import qs.modules.services
 
 Singleton {
     id: root
@@ -16,18 +16,8 @@ Singleton {
     property var workspaceOccupationMap: ({})
     property var workspaceWindowsMap: ({})
 
-    // Debounce timer to batch rapid Hyprland events
-    Timer {
-        id: updateDebounce
-        interval: 100
-        onTriggered: {
-            getClients.running = true
-            getMonitors.running = true
-        }
-    }
-
     function updateWindowList() {
-        updateDebounce.restart()
+        AxctlService.fetchInitialState()
     }
 
     function updateMaps() {
@@ -51,44 +41,26 @@ Singleton {
     }
 
     Connections {
-        target: Hyprland
+        target: AxctlService.clients
 
-        function onRawEvent(event) {
-            // Only request full update for critical events
-            let ignoreList = [
-                "activewindow", "focusedmon", "monitoradded", 
-                "createworkspace", "destroyworkspace", "moveworkspace", 
-                "activespecial", "movewindow", "windowtitle"
-            ]
-            if (ignoreList.includes(event.name)) return
-            updateWindowList()
+        function onValuesChanged() {
+            root.windowList = AxctlService.clients.values
+            let tempWinByAddress = {}
+            for (var i = 0; i < root.windowList.length; ++i) {
+                var win = root.windowList[i]
+                tempWinByAddress[win.address] = win
+            }
+            root.windowByAddress = tempWinByAddress
+            root.addresses = root.windowList.map((win) => win.address)
+            updateMaps()
         }
     }
 
-    Process {
-        id: getClients
-        command: ["bash", "-c", "hyprctl clients -j | jq -c"]
-        stdout: SplitParser {
-            onRead: (data) => {
-                root.windowList = JSON.parse(data)
-                let tempWinByAddress = {}
-                for (var i = 0; i < root.windowList.length; ++i) {
-                    var win = root.windowList[i]
-                    tempWinByAddress[win.address] = win
-                }
-                root.windowByAddress = tempWinByAddress
-                root.addresses = root.windowList.map((win) => win.address)
-                updateMaps()
-            }
-        }
-    }
-    Process {
-        id: getMonitors
-        command: ["bash", "-c", "hyprctl monitors -j | jq -c"]
-        stdout: SplitParser {
-            onRead: (data) => {
-                root.monitors = JSON.parse(data)
-            }
+    Connections {
+        target: AxctlService.monitors
+
+        function onValuesChanged() {
+            root.monitors = AxctlService.monitors.values
         }
     }
 }
