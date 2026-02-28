@@ -7,6 +7,7 @@ pragma ComponentBehavior: Bound
 import Quickshell
 import Quickshell.Io
 import qs.modules.services
+import Quickshell.Hyprland
 import QtQuick
 
 /**
