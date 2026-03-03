@@ -118,3 +118,11 @@ curl -L get.axeni.de/ambxst | sh
 - The `qs.` import prefix is a Quickshell VFS construct, not a physical directory.
 - `screenshotToolMode` in `GlobalStates.qml` is **DEPRECATED**.
 - Gemini AI provider doesn't support the `system` role; handled in `services/ai/strategies/`.
+- `axctl` is a core part of this project. It abstracts compositor interactions. It is one of Axenide's projects and the source code is available at `/home/adriano/Repos/Axenide/axctl/`.
+- Some projects to keep in mind for reference:
+  - DankMaterialShell (DMS): https://github.com/AvengeMedia/DankMaterialShell
+  - Noctalia: https://github.com/noctalia-dev/noctalia-shell
+  - end-4 Dotfiles: https://github.com/end-4/dots-hyprland
+  - Hyprland: https://github.com/hyprwm/hyprland
+  - MangoWC: https://github.com/DreamMaoMao/mangowc
+  - Niri: https://github.com/YaLTeR/niri
