@@ -162,8 +162,8 @@ Item {
             anchors.fill: parent
             anchors.topMargin: root.sidebarMargin
             anchors.bottomMargin: root.sidebarMargin
-            anchors.leftMargin: GlobalStates.assistantPosition === "right" ? root.sidebarMargin : 0
-            anchors.rightMargin: GlobalStates.assistantPosition === "left" ? root.sidebarMargin : 0
+            anchors.leftMargin: GlobalStates.assistantPosition === "left" ? root.sidebarMargin : 0
+            anchors.rightMargin: GlobalStates.assistantPosition === "right" ? root.sidebarMargin : 0
             variant: "bg"
 
             ColumnLayout {
