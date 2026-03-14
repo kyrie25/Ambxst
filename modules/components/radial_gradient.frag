@@ -56,14 +56,20 @@ void main() {
     float dist = length(d);
     float t = clamp(dist, 0.0, 1.0);
 
-    // Procedural gradient: interpolate between stops
+    // Antialiasing: pixel-width smoothing for sharp transitions
+    float fw = fwidth(t) * 0.5;
+
+    // Procedural gradient: interpolate between stops with AA
     vec4 color = getStopColor(0);
     for (int i = 1; i < 8; i++) {
         if (i >= ubuf.numStops) break;
         float posI = getStopPos(i);
         float posPrev = getStopPos(i - 1);
         float range = posI - posPrev;
-        float localT = clamp((t - posPrev) / max(range, 0.0001), 0.0, 1.0);
+        float localT = smoothstep(posPrev - fw, posI + fw, t);
+        if (range > fw * 2.0) {
+            localT = clamp((t - posPrev) / range, 0.0, 1.0);
+        }
         color = mix(color, getStopColor(i), localT);
     }
 
