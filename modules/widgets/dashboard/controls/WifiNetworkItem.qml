@@ -128,7 +128,6 @@ Item {
                 }
             }
 
-            // Frequency badge (5GHz indicator)
             StyledRect {
                 visible: root.network?.is5GHz ?? false
                 variant: "common"

@@ -9,14 +9,14 @@ Singleton {
 
     // EasyEffects availability
     property bool available: false
-    
+
     // Bypass: false = active, true = bypassed
     property bool bypassed: false
-    
+
     // Available presets
     property var outputPresets: []
     property var inputPresets: []
-    
+
     // Currently active presets
     property string activeOutputPreset: ""
     property string activeInputPreset: ""
@@ -26,7 +26,7 @@ Singleton {
         bypassToggleProcess.command = ["easyeffects", "-b", bypassed ? "2" : "1"];
         bypassToggleProcess.running = true;
     }
-    
+
     function setBypass(enable: bool) {
         bypassToggleProcess.command = ["easyeffects", "-b", enable ? "1" : "2"];
         bypassToggleProcess.running = true;
@@ -90,7 +90,7 @@ Singleton {
         id: bypassStateProcess
         command: ["easyeffects", "-b", "3"]
         running: false
-        environment: ({ LANG: "C", LC_ALL: "C" })
+        environment: ({ LANG: "C.UTF-8", LC_ALL: "C.UTF-8" })
         stdout: SplitParser {
             onRead: data => {
                 const val = data.trim();
@@ -135,7 +135,7 @@ Singleton {
         command: ["easyeffects", "-p"]
         running: false
         property string buffer: ""
-        environment: ({ LANG: "C", LC_ALL: "C" })
+        environment: ({ LANG: "C.UTF-8", LC_ALL: "C.UTF-8" })
         stdout: SplitParser {
             onRead: data => {
                 presetsProcess.buffer += data + "\n";
@@ -144,13 +144,13 @@ Singleton {
         onExited: {
             const text = presetsProcess.buffer;
             presetsProcess.buffer = "";
-            
+
             const lines = text.split("\n");
             let isOutput = false;
             let isInput = false;
             let outputList = [];
             let inputList = [];
-            
+
             for (const line of lines) {
                 const trimmed = line.trim();
                 if (trimmed.toLowerCase().includes("output")) {
@@ -174,7 +174,7 @@ Singleton {
                     else if (isInput) inputList.push(trimmed);
                 }
             }
-            
+
             root.outputPresets = outputList;
             root.inputPresets = inputList;
         }
@@ -186,7 +186,7 @@ Singleton {
         command: ["easyeffects", "-a"]
         running: false
         property string buffer: ""
-        environment: ({ LANG: "C", LC_ALL: "C" })
+        environment: ({ LANG: "C.UTF-8", LC_ALL: "C.UTF-8" })
         stdout: SplitParser {
             onRead: data => {
                 activePresetsProcess.buffer += data + "\n";
@@ -195,7 +195,7 @@ Singleton {
         onExited: {
             const text = activePresetsProcess.buffer;
             activePresetsProcess.buffer = "";
-            
+
             const lines = text.split("\n");
             for (const line of lines) {
                 const trimmed = line.trim().toLowerCase();

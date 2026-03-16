@@ -6,6 +6,7 @@ import QtQuick.Layouts
 import qs.modules.theme
 import qs.modules.components
 import qs.modules.globals
+import qs.modules.services
 import qs.config
 
 Item {
@@ -83,7 +84,7 @@ Item {
                     id: titlebar
                     width: root.contentWidth
                     anchors.horizontalCenter: parent.horizontalCenter
-                    title: root.currentSection === "" ? "System" : (root.currentSection === "system" ? "System Resources" : (root.currentSection.charAt(0).toUpperCase() + root.currentSection.slice(1)))
+                    title: root.currentSection === "" ? "System" : (root.currentSection === "system" ? "System Resources" : (root.currentSection === "nightlight" ? "Night Light" : (root.currentSection.charAt(0).toUpperCase() + root.currentSection.slice(1))))
                     statusText: ""
 
                     actions: {
@@ -141,6 +142,10 @@ Item {
                         SectionButton {
                             text: "Idle"
                             sectionId: "idle"
+                        }
+                        SectionButton {
+                            text: "Night Light"
+                            sectionId: "nightlight"
                         }
                     }
 
@@ -796,6 +801,516 @@ Item {
                         }
                     }
 
+                    // =====================
+                    // NIGHT LIGHT SECTION
+                    // =====================
+                    ColumnLayout {
+                        visible: root.currentSection === "nightlight"
+                        property string settingsSection: "nightlight"
+                        Layout.fillWidth: true
+                        spacing: 8
+
+                        Text {
+                            text: "Night Light"
+                            font.family: Config.theme.font
+                            font.pixelSize: Styling.fontSize(-1)
+                            font.weight: Font.Medium
+                            color: Colors.overSurfaceVariant
+                            Layout.bottomMargin: -4
+                        }
+
+                        Text {
+                            text: "Blue light filter powered by hyprsunset"
+                            font.family: Config.theme.font
+                            font.pixelSize: Styling.fontSize(-2)
+                            color: Colors.overSurfaceVariant
+                            opacity: 0.7
+                        }
+
+                        // Enable toggle
+                        ToggleRow {
+                            Layout.fillWidth: true
+                            label: "Enabled"
+                            description: "Toggle blue light filter"
+                            checked: NightLightService.active
+                            onToggled: checked => {
+                                NightLightService.toggle()
+                            }
+                        }
+
+                        // Temperature slider
+                        ColumnLayout {
+                            Layout.fillWidth: true
+                            spacing: 4
+
+                            RowLayout {
+                                Layout.fillWidth: true
+                                spacing: 8
+
+                                Text {
+                                    text: "Temperature"
+                                    font.family: Config.theme.font
+                                    font.pixelSize: Styling.fontSize(0)
+                                    color: Colors.overBackground
+                                    Layout.fillWidth: true
+                                }
+
+                                Text {
+                                    text: tempSlider.displayValue + "K"
+                                    font.family: Config.theme.monoFont
+                                    font.pixelSize: Styling.monoFontSize(0)
+                                    color: Colors.overSurfaceVariant
+                                }
+                            }
+
+                            StyledSlider {
+                                id: tempSlider
+                                Layout.fillWidth: true
+                                Layout.preferredHeight: 20
+                                progressColor: Styling.srItem("overprimary")
+                                scroll: true
+                                stepSize: 0.01
+                                snapMode: "always"
+                                tooltipText: displayValue + "K"
+
+                                property int displayValue: Math.round(1000 + value * 5000)
+
+                                readonly property int configValue: NightLightService.temperature
+
+                                onConfigValueChanged: {
+                                    const normalized = (configValue - 1000) / 5000
+                                    if (Math.abs(value - normalized) > 0.001) {
+                                        value = normalized
+                                    }
+                                }
+
+                                Component.onCompleted: value = (configValue - 1000) / 5000
+
+                                onValueChanged: {
+                                    const newTemp = Math.round(1000 + value * 5000)
+                                    if (newTemp !== NightLightService.temperature) {
+                                        NightLightService.setTemperature(newTemp)
+                                    }
+                                }
+                            }
+
+                            RowLayout {
+                                Layout.fillWidth: true
+                                Text {
+                                    text: "Warm"
+                                    font.family: Config.theme.font
+                                    font.pixelSize: Styling.fontSize(-3)
+                                    color: Colors.overSurfaceVariant
+                                    opacity: 0.5
+                                }
+                                Item { Layout.fillWidth: true }
+                                Text {
+                                    text: "Cool"
+                                    font.family: Config.theme.font
+                                    font.pixelSize: Styling.fontSize(-3)
+                                    color: Colors.overSurfaceVariant
+                                    opacity: 0.5
+                                }
+                            }
+                        }
+
+                        // Gamma slider
+                        ColumnLayout {
+                            Layout.fillWidth: true
+                            spacing: 4
+
+                            RowLayout {
+                                Layout.fillWidth: true
+                                spacing: 8
+
+                                Text {
+                                    text: "Gamma"
+                                    font.family: Config.theme.font
+                                    font.pixelSize: Styling.fontSize(0)
+                                    color: Colors.overBackground
+                                    Layout.fillWidth: true
+                                }
+
+                                Text {
+                                    text: gammaSlider.displayValue + "%"
+                                    font.family: Config.theme.monoFont
+                                    font.pixelSize: Styling.monoFontSize(0)
+                                    color: Colors.overSurfaceVariant
+                                }
+                            }
+
+                            StyledSlider {
+                                id: gammaSlider
+                                Layout.fillWidth: true
+                                Layout.preferredHeight: 20
+                                progressColor: Styling.srItem("overprimary")
+                                scroll: true
+                                stepSize: 0.01
+                                snapMode: "always"
+                                tooltipText: displayValue + "%"
+
+                                property int displayValue: Math.round(value * 150)
+
+                                readonly property int configValue: NightLightService.gamma
+
+                                onConfigValueChanged: {
+                                    const normalized = configValue / 150
+                                    if (Math.abs(value - normalized) > 0.001) {
+                                        value = normalized
+                                    }
+                                }
+
+                                Component.onCompleted: value = configValue / 150
+
+                                onValueChanged: {
+                                    const newGamma = Math.round(value * 150)
+                                    if (newGamma !== NightLightService.gamma) {
+                                        NightLightService.setGamma(newGamma)
+                                    }
+                                }
+                            }
+
+                            RowLayout {
+                                Layout.fillWidth: true
+                                Text {
+                                    text: "Dim"
+                                    font.family: Config.theme.font
+                                    font.pixelSize: Styling.fontSize(-3)
+                                    color: Colors.overSurfaceVariant
+                                    opacity: 0.5
+                                }
+                                Item { Layout.fillWidth: true }
+                                Text {
+                                    text: "Bright"
+                                    font.family: Config.theme.font
+                                    font.pixelSize: Styling.fontSize(-3)
+                                    color: Colors.overSurfaceVariant
+                                    opacity: 0.5
+                                }
+                            }
+                        }
+
+                        RowLayout {
+                            // Reset button
+                            StyledRect {
+                                id: resetNightLightBtn
+                                property bool isHovered: false
+                                variant: isHovered ? "focus" : "common"
+                                Layout.preferredWidth: resetContent.width + 24
+                                Layout.preferredHeight: 36
+                                radius: Styling.radius(-2)
+
+                                Row {
+                                    id: resetContent
+                                    anchors.centerIn: parent
+                                    spacing: 6
+
+                                    Text {
+                                        text: Icons.arrowCounterClockwise
+                                        font.family: Icons.font
+                                        font.pixelSize: 14
+                                        color: resetNightLightBtn.item
+                                        anchors.verticalCenter: parent.verticalCenter
+                                    }
+
+                                    Text {
+                                        text: "Reset to Profile"
+                                        font.family: Config.theme.font
+                                        font.pixelSize: Styling.fontSize(0)
+                                        color: resetNightLightBtn.item
+                                        anchors.verticalCenter: parent.verticalCenter
+                                    }
+                                }
+
+                                MouseArea {
+                                    anchors.fill: parent
+                                    hoverEnabled: true
+                                    cursorShape: Qt.PointingHandCursor
+                                    onEntered: resetNightLightBtn.isHovered = true
+                                    onExited: resetNightLightBtn.isHovered = false
+                                    onClicked: NightLightService.resetToProfile()
+                                }
+
+                                StyledToolTip {
+                                    visible: resetNightLightBtn.isHovered
+                                    tooltipText: "Reset temperature and gamma to the current hyprsunset profile"
+                                }
+                            }
+
+                            // Restart daemon button
+                            StyledRect {
+                                id: restartDaemonBtn
+                                property bool isHovered: false
+                                variant: isHovered ? "focus" : "common"
+                                Layout.preferredWidth: restartContent.width + 24
+                                Layout.preferredHeight: 36
+                                radius: Styling.radius(-2)
+
+                                Row {
+                                    id: restartContent
+                                    anchors.centerIn: parent
+                                    spacing: 6
+
+                                    Text {
+                                        text: Icons.reboot
+                                        font.family: Icons.font
+                                        font.pixelSize: 14
+                                        color: restartDaemonBtn.item
+                                        anchors.verticalCenter: parent.verticalCenter
+                                    }
+
+                                    Text {
+                                        text: "Restart Daemon"
+                                        font.family: Config.theme.font
+                                        font.pixelSize: Styling.fontSize(0)
+                                        color: restartDaemonBtn.item
+                                        anchors.verticalCenter: parent.verticalCenter
+                                    }
+                                }
+
+                                MouseArea {
+                                    anchors.fill: parent
+                                    hoverEnabled: true
+                                    cursorShape: Qt.PointingHandCursor
+                                    onEntered: restartDaemonBtn.isHovered = true
+                                    onExited: restartDaemonBtn.isHovered = false
+                                    onClicked: NightLightService.restartDaemon()
+                                }
+
+                                StyledToolTip {
+                                    visible: restartDaemonBtn.isHovered
+                                    tooltipText: "Kill and restart the hyprsunset daemon"
+                                }
+                            }
+                        }
+
+
+                        // ─────────────────────────
+                        // SCHEDULES
+                        // ─────────────────────────
+                        Rectangle {
+                            Layout.fillWidth: true
+                            height: 1
+                            color: Colors.surfaceBright
+                            Layout.topMargin: 8
+                        }
+
+                        ToggleRow {
+                            Layout.fillWidth: true
+                            label: "Schedules"
+                            description: "Automatically change settings at specific times"
+                            checked: NightLightService.schedulesEnabled
+                            onToggled: checked => {
+                                NightLightService.setSchedulesEnabled(checked)
+                            }
+                        }
+
+                        Repeater {
+                            model: NightLightService.schedulesEnabled ? NightLightService.schedules : []
+
+                            delegate: ColumnLayout {
+                                id: scheduleDelegate
+                                required property var modelData
+                                required property int index
+
+                                Layout.fillWidth: true
+                                spacing: 4
+                                Layout.bottomMargin: 4
+
+                                Rectangle {
+                                    Layout.fillWidth: true
+                                    height: 1
+                                    color: Colors.surfaceBright
+                                    visible: scheduleDelegate.index > 0
+                                }
+
+                                RowLayout {
+                                    Layout.fillWidth: true
+
+                                    Text {
+                                        text: "Profile " + (scheduleDelegate.index + 1)
+                                        font.family: Config.theme.font
+                                        font.pixelSize: Styling.fontSize(-1)
+                                        font.bold: true
+                                        color: Styling.srItem("overprimary")
+                                    }
+                                    Item { Layout.fillWidth: true }
+
+                                    StyledRect {
+                                        id: deleteScheduleBtn
+                                        variant: "error"
+                                        Layout.preferredWidth: 24
+                                        Layout.preferredHeight: 24
+                                        radius: Styling.radius(-2)
+
+                                        Text {
+                                            anchors.centerIn: parent
+                                            text: Icons.trash
+                                            font.family: Icons.font
+                                            color: deleteScheduleBtn.item
+                                        }
+
+                                        MouseArea {
+                                            anchors.fill: parent
+                                            cursorShape: Qt.PointingHandCursor
+                                            onClicked: NightLightService.removeSchedule(scheduleDelegate.index)
+                                        }
+                                    }
+                                }
+
+                                // Time input
+                                RowLayout {
+                                    Layout.fillWidth: true
+                                    spacing: 8
+
+                                    Text {
+                                        text: "Time"
+                                        font.family: Config.theme.font
+                                        font.pixelSize: Styling.fontSize(0)
+                                        color: Colors.overBackground
+                                        Layout.fillWidth: true
+                                    }
+
+                                    StyledRect {
+                                        variant: "common"
+                                        Layout.preferredWidth: 80
+                                        Layout.preferredHeight: 32
+                                        radius: Styling.radius(-2)
+
+                                        TextInput {
+                                            id: scheduleTimeInput
+                                            anchors.fill: parent
+                                            anchors.margins: 8
+                                            font.family: Config.theme.monoFont
+                                            font.pixelSize: Styling.monoFontSize(0)
+                                            color: Colors.overBackground
+                                            selectByMouse: true
+                                            clip: true
+                                            verticalAlignment: TextInput.AlignVCenter
+                                            horizontalAlignment: TextInput.AlignHCenter
+                                            text: scheduleDelegate.modelData.time || "0:00"
+
+                                            onEditingFinished: {
+                                                var t = text.trim()
+                                                if (/^\d{1,2}:\d{2}$/.test(t)) {
+                                                    NightLightService.updateSchedule(
+                                                        scheduleDelegate.index, t,
+                                                        scheduleDelegate.modelData.temperature,
+                                                        scheduleDelegate.modelData.gamma,
+                                                        scheduleDelegate.modelData.identity
+                                                    )
+                                                }
+                                            }
+
+                                            Text {
+                                                anchors.verticalCenter: parent.verticalCenter
+                                                visible: !scheduleTimeInput.text && !scheduleTimeInput.activeFocus
+                                                text: "HH:MM"
+                                                font: scheduleTimeInput.font
+                                                color: Colors.overSurfaceVariant
+                                            }
+                                        }
+                                    }
+                                }
+
+                                // Identity toggle
+                                ToggleRow {
+                                    Layout.fillWidth: true
+                                    label: "Identity"
+                                    description: "Disable filter at this time"
+                                    checked: scheduleDelegate.modelData.identity || false
+                                    onToggled: checked => {
+                                        NightLightService.updateSchedule(
+                                            scheduleDelegate.index,
+                                            scheduleDelegate.modelData.time,
+                                            scheduleDelegate.modelData.temperature,
+                                            scheduleDelegate.modelData.gamma,
+                                            checked
+                                        )
+                                    }
+                                }
+
+                                // Temperature (hidden when identity)
+                                NumberInputRow {
+                                    visible: !(scheduleDelegate.modelData.identity || false)
+                                    label: "Temperature"
+                                    value: scheduleDelegate.modelData.temperature || 4500
+                                    minValue: 1000
+                                    maxValue: 6000
+                                    suffix: "K"
+                                    onValueEdited: val => {
+                                        NightLightService.updateSchedule(
+                                            scheduleDelegate.index,
+                                            scheduleDelegate.modelData.time,
+                                            val,
+                                            scheduleDelegate.modelData.gamma,
+                                            scheduleDelegate.modelData.identity
+                                        )
+                                    }
+                                }
+
+                                // Gamma (hidden when identity)
+                                NumberInputRow {
+                                    visible: !(scheduleDelegate.modelData.identity || false)
+                                    label: "Gamma"
+                                    value: scheduleDelegate.modelData.gamma || 100
+                                    minValue: 1
+                                    maxValue: 150
+                                    suffix: "%"
+                                    onValueEdited: val => {
+                                        NightLightService.updateSchedule(
+                                            scheduleDelegate.index,
+                                            scheduleDelegate.modelData.time,
+                                            scheduleDelegate.modelData.temperature,
+                                            val,
+                                            scheduleDelegate.modelData.identity
+                                        )
+                                    }
+                                }
+                            }
+                        }
+
+                        // Add schedule button
+                        StyledRect {
+                            id: addScheduleBtn
+                            visible: NightLightService.schedulesEnabled
+                            variant: addScheduleArea.containsMouse ? "primaryfocus" : "primary"
+                            Layout.preferredWidth: addScheduleContent.width + 24
+                            Layout.preferredHeight: 36
+                            radius: Styling.radius(-2)
+
+                            Row {
+                                id: addScheduleContent
+                                anchors.centerIn: parent
+                                spacing: 6
+
+                                Text {
+                                    text: Icons.plus
+                                    font.family: Icons.font
+                                    font.pixelSize: 14
+                                    color: addScheduleBtn.item
+                                    anchors.verticalCenter: parent.verticalCenter
+                                }
+
+                                Text {
+                                    text: "Add Profile"
+                                    font.family: Config.theme.font
+                                    font.pixelSize: Styling.fontSize(0)
+                                    color: addScheduleBtn.item
+                                    anchors.verticalCenter: parent.verticalCenter
+                                }
+                            }
+
+                            MouseArea {
+                                id: addScheduleArea
+                                anchors.fill: parent
+                                hoverEnabled: true
+                                cursorShape: Qt.PointingHandCursor
+                                onClicked: NightLightService.addSchedule("21:00", 4500, 100)
+                            }
+                        }
+                    }
+
                     // Bottom spacing
                     Item {
                         Layout.fillWidth: true
@@ -1011,6 +1526,7 @@ Item {
                 font.family: Config.theme.font
                 font.pixelSize: Styling.fontSize(0)
                 color: Colors.overBackground
+                Layout.fillWidth: true
             }
 
             Text {
@@ -1031,7 +1547,7 @@ Item {
             Rectangle {
                 anchors.fill: parent
                 radius: Styling.radius(-4)
-                color: Colors.background
+                color: Colors.surface
                 visible: !checked
             }
 

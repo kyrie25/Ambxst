@@ -71,15 +71,15 @@ Singleton {
             property var reject
             property string buffer: ""
             property string errorBuffer: ""
-            
+
             stdout: SplitParser {
                 onRead: data => internalProc.buffer += data + "\n"
             }
-            
+
             stderr: SplitParser {
                 onRead: data => internalProc.errorBuffer += data + "\n"
             }
-            
+
             onExited: (exitCode, exitStatus) => {
                 if (exitCode === 0) resolve(buffer.trim());
                 else reject(errorBuffer.trim() || `Process exited with code ${exitCode}`);
@@ -121,7 +121,7 @@ Singleton {
             getNetworks.running = true;
             return;
         }
-        
+
         lastScanTime = now;
         wifiScanning = true;
         runAsync(["nmcli", "dev", "wifi", "list", "--rescan", "yes"]).then(() => {
@@ -201,17 +201,17 @@ Singleton {
 
     function performUpdate() {
         if (isUpdating) return;
-        
+
         // Skip/delay updates if UI closed
         // nmcli monitor is event-based; safe to run.
         // Optimization: Only update signal strength when UI open
         const uiOpen = GlobalStates.dashboardOpen || GlobalStates.launcherOpen || GlobalStates.overviewOpen;
-        
+
         isUpdating = true;
         updateConnectionType.startCheck();
         wifiStatusProcess.running = true;
         updateNetworkName.running = true;
-        
+
         if (uiOpen) {
             updateNetworkStrength.running = true;
         }
@@ -300,8 +300,8 @@ Singleton {
         command: ["nmcli", "radio", "wifi"]
         running: true
         environment: ({
-            LANG: "C",
-            LC_ALL: "C"
+            LANG: "C.UTF-8",
+            LC_ALL: "C.UTF-8"
         })
         stdout: SplitParser {
             onRead: data => {
@@ -315,8 +315,8 @@ Singleton {
         running: false
         command: ["nmcli", "-g", "ACTIVE,SIGNAL,FREQ,SSID,BSSID,SECURITY", "d", "w"]
         environment: ({
-            LANG: "C",
-            LC_ALL: "C"
+            LANG: "C.UTF-8",
+            LC_ALL: "C.UTF-8"
         })
         property string buffer: ""
         stdout: SplitParser {
@@ -327,7 +327,7 @@ Singleton {
         onExited: (exitCode, exitStatus) => {
             const text = getNetworks.buffer;
             getNetworks.buffer = "";
-            
+
             Qt.callLater(() => {
                 if (text.length === 0) {
                     root.updateFriendlyList();

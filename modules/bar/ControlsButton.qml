@@ -1,6 +1,7 @@
 pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Layouts
+import Quickshell
 import qs.modules.services
 import qs.modules.components
 import qs.modules.theme
@@ -14,7 +15,7 @@ Item {
     property bool vertical: bar.orientation === "vertical"
     property bool isHovered: false
     property bool layerEnabled: true
-    
+
     property real radius: 0
     property real startRadius: radius
     property real endRadius: radius
@@ -26,6 +27,11 @@ Item {
     Layout.preferredHeight: 36
     Layout.fillWidth: vertical
     Layout.fillHeight: !vertical
+
+    StyledToolTip {
+        show: root.isHovered && !root.popupOpen
+        tooltipText: "Audio & Brightness Controls"
+    }
 
     HoverHandler {
         onHoveredChanged: root.isHovered = hovered
@@ -69,7 +75,15 @@ Item {
             anchors.fill: parent
             hoverEnabled: false
             cursorShape: Qt.PointingHandCursor
-            onClicked: controlsPopup.toggle()
+            acceptedButtons: Qt.LeftButton | Qt.RightButton
+            onClicked: mouse => {
+                if (mouse.button === Qt.RightButton) {
+                    Quickshell.execDetached(["pavucontrol"]);
+                    return;
+                } else if (mouse.button === Qt.LeftButton) {
+                    controlsPopup.toggle();
+                }
+            }
         }
     }
 

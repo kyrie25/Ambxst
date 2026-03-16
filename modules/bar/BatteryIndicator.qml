@@ -15,7 +15,7 @@ Item {
     property bool vertical: bar.orientation === "vertical"
     property bool isHovered: false
     property bool layerEnabled: true
-    
+
     property real radius: 0
     property real startRadius: radius
     property real endRadius: radius
@@ -248,7 +248,7 @@ Item {
                         }
 
                         Text {
-                            text: Battery.isPluggedIn ? (Battery.timeToFull !== "" ? "Full in " + Battery.timeToFull : "") : (Battery.timeToEmpty !== "" ? Battery.timeToEmpty + " remaining" : "")
+                            text: Battery.isPluggedIn ? (Battery.timeToFull !== "" ? "Full in " + Battery.timeToFull : "Fully charged") : (Battery.timeToEmpty !== "" ? Battery.timeToEmpty + " remaining" : "")
                             font.family: Styling.defaultFont
                             font.pixelSize: Styling.fontSize(-1)
                             color: Colors.overBackground

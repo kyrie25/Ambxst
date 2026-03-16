@@ -13,12 +13,12 @@ Singleton {
     property bool discovering: false
     property bool connected: false
     property int connectedDevices: 0
-    
+
     readonly property list<BluetoothDevice> devices: []
-    
+
     // Cached sorted device list - only updates when devices change
     property list<var> friendlyDeviceList: []
-    
+
     // Queue for batching updateInfo calls
     property var pendingInfoUpdates: []
     property bool isProcessingInfoQueue: false
@@ -87,7 +87,7 @@ Singleton {
             updateFriendlyList();
             return;
         }
-        
+
         isProcessingInfoQueue = true;
         const device = pendingInfoUpdates.shift();
         if (device) {
@@ -117,15 +117,15 @@ Singleton {
             property var reject
             property string buffer: ""
             property string errorBuffer: ""
-            
+
             stdout: SplitParser {
                 onRead: data => internalProc.buffer += data + "\n"
             }
-            
+
             stderr: SplitParser {
                 onRead: data => internalProc.errorBuffer += data + "\n"
             }
-            
+
             onExited: (exitCode, exitStatus) => {
                 if (exitCode === 0) resolve(buffer.trim());
                 else reject(errorBuffer.trim() || `Process exited with code ${exitCode}`);
@@ -269,7 +269,7 @@ Singleton {
             onRead: (data) => {
                 const output = data ? data.trim() : "";
                 root.enabled = output === "yes";
-                
+
                 if (root.enabled) {
                     checkConnectedProcess.running = true;
                 } else {
@@ -306,8 +306,8 @@ Singleton {
         running: false
         property string buffer: ""
         environment: ({
-            LANG: "C",
-            LC_ALL: "C"
+            LANG: "C.UTF-8",
+            LC_ALL: "C.UTF-8"
         })
         stdout: SplitParser {
             onRead: data => {
@@ -317,7 +317,7 @@ Singleton {
         onExited: (exitCode, exitStatus) => {
             const text = getDevicesProcess.buffer;
             getDevicesProcess.buffer = "";
-            
+
             Qt.callLater(() => {
                 const deviceLines = text.trim().split("\n").filter(l => l.startsWith("Device "));
                 const deviceDataList = [];
@@ -332,7 +332,7 @@ Singleton {
                 }
 
                 const rDevices = root.devices;
-                
+
                 // 1. Remove gone devices
                 for (let i = rDevices.length - 1; i >= 0; i--) {
                     const rd = rDevices[i];
@@ -341,7 +341,7 @@ Singleton {
                         rd.destroy();
                     }
                 }
-                
+
                 // 2. Add or update devices
                 for (let i = 0; i < deviceDataList.length; i++) {
                     const data = deviceDataList[i];
@@ -360,7 +360,7 @@ Singleton {
                         root.queueInfoUpdate(newDevice);
                     }
                 }
-                
+
                 if (deviceDataList.length === 0) {
                     root.updateFriendlyList();
                 }

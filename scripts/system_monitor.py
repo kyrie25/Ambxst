@@ -258,7 +258,29 @@ class SystemMonitor:
                 except:
                     pass
             elif gpu["vendor"] == "intel":
-                pass
+                card = gpu["card"]
+                try:
+                    cur_path = f"/sys/class/drm/{card}/gt_cur_freq_mhz"
+                    max_path = f"/sys/class/drm/{card}/gt_max_freq_mhz"
+                    if os.path.exists(cur_path) and os.path.exists(max_path):
+                        with open(cur_path, "r") as f:
+                            cur = int(f.read().strip())
+                        with open(max_path, "r") as f:
+                            mx = int(f.read().strip())
+                        if mx > 0:
+                            u = min(100.0, (cur / mx) * 100.0)
+                except:
+                    pass
+                try:
+                    hwmon_base = f"/sys/class/drm/{card}/device/hwmon"
+                    if os.path.exists(hwmon_base):
+                        hwmon_dir = os.listdir(hwmon_base)[0]
+                        with open(
+                            os.path.join(hwmon_base, hwmon_dir, "temp1_input"), "r"
+                        ) as f:
+                            t = int(f.read().strip()) // 1000
+                except:
+                    pass
             usages.append(u)
             temps.append(t)
         return usages, temps
