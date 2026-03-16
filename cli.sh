@@ -132,15 +132,22 @@ refresh)
 run)
 	CMD="${2:-}"
 	PIPE="/tmp/ambxst_ipc.pipe"
+	EXTRA_ARGS=("${@:3}")
 
 	if [ -z "$CMD" ]; then
 		echo "Error: No command specified for run"
 		exit 1
 	fi
 
+	if [ ${#EXTRA_ARGS[@]} -gt 0 ]; then
+		FULL_CMD="$CMD ${EXTRA_ARGS[*]}"
+	else
+		FULL_CMD="$CMD"
+	fi
+
 	# Fast path: Write directly to pipe if it exists (Zero latency)
 	if [ -p "$PIPE" ]; then
-		echo "$CMD" >"$PIPE" &
+		echo "$FULL_CMD" >"$PIPE" &
 		exit 0
 	fi
 
@@ -151,8 +158,8 @@ run)
 		exit 1
 	fi
 
-	qs ipc --pid "$PID" call ambxst run "$CMD" 2>/dev/null || {
-		echo "Error: Could not run command '$CMD'"
+	qs ipc --pid "$PID" call ambxst run "$CMD" "${EXTRA_ARGS[@]}" 2>/dev/null || {
+		echo "Error: Could not run command '$FULL_CMD'"
 		exit 1
 	}
 	;;

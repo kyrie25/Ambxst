@@ -14,11 +14,26 @@ QtObject {
     readonly property string appId: "ambxst"
     readonly property string ipcPipe: "/tmp/ambxst_ipc.pipe"
 
+    function parseCommandTokens(rawCommand) {
+        if (typeof rawCommand !== "string") {
+            return [];
+        }
+
+        const matches = rawCommand.match(/\"(?:\\.|[^\"\\])*\"|'(?:\\.|[^'\\])*'|\S+/g) || [];
+        return matches.map(token => {
+            const quote = token[0];
+            if ((quote === '"' || quote === "'") && token[token.length - 1] === quote) {
+                return token.slice(1, -1);
+            }
+            return token;
+        });
+    }
+
     // High-performance Pipe Listener (Daemon mode)
     property Process pipeListener: Process {
         command: ["bash", "-c", "rm -f " + root.ipcPipe + "; mkfifo " + root.ipcPipe + "; tail -f " + root.ipcPipe]
         running: true
-        
+
         stdout: SplitParser {
             onRead: data => {
                 const cmd = data.trim();
@@ -29,9 +44,27 @@ QtObject {
         }
     }
 
-    function run(command) {
-        console.log("IPC run command received:", command);
-        switch (command) {
+    function run(command, parameters) {
+        let parsedCommand = command;
+        let parsedParameters = [];
+
+        if (Array.isArray(parameters)) {
+            parsedParameters = parameters;
+        } else if (typeof parameters === "string" && parameters !== "") {
+            parsedParameters = parseCommandTokens(parameters);
+        }
+
+        // Support pipe payloads like: "dashboard --flag value"
+        if (typeof command === "string" && parsedParameters.length === 0 && command.indexOf(" ") !== -1) {
+            const tokens = parseCommandTokens(command);
+            if (tokens.length > 0) {
+                parsedCommand = tokens[0];
+                parsedParameters = tokens.slice(1);
+            }
+        }
+
+        console.log("IPC run command received:", parsedCommand, parsedParameters);
+        switch (parsedCommand) {
             // Launcher (Standalone Notch Module)
             case "launcher": toggleLauncher(); break;
             case "clipboard": toggleLauncherWithPrefix(1, Config.prefix.clipboard + " "); break;
@@ -54,33 +87,42 @@ QtObject {
             case "powermenu": toggleSimpleModule("powermenu"); break;
             case "tools": toggleSimpleModule("tools"); break;
             case "config": toggleSettings(); break;
-            case "screenshot": Screenshot.initialize(); GlobalStates.screenshotToolVisible = true; break;
+            case "screenshot":
+                Screenshot.initialize();
+                if (Screenshot.captureModes.includes(parsedParameters[0])) {
+                    GlobalStates.screenshotCaptureMode = parsedParameters[0];
+                } else {
+                    GlobalStates.screenshotCaptureMode = "region";
+                }
+                GlobalStates.screenshotToolVisible = true;
+                break;
             case "screenrecord": ScreenRecorder.initialize(); GlobalStates.screenRecordToolVisible = true; break;
-            case "lens": 
+            case "lens":
                 Screenshot.initialize();
                 Screenshot.captureMode = "lens";
                 GlobalStates.screenshotToolVisible = true;
                 break;
             case "lockscreen": GlobalStates.lockscreenVisible = true; break;
-            
+
             // Media
             case "media-seek-backward": seekActivePlayer(-mediaSeekStepMs); break;
             case "media-seek-forward": seekActivePlayer(mediaSeekStepMs); break;
-            case "media-play-pause": 
+            case "media-play-pause":
                 if (MprisController.canTogglePlaying) MprisController.togglePlaying();
                 break;
             case "media-next": MprisController.next(); break;
             case "media-prev": MprisController.previous(); break;
-                
-            default: console.warn("Unknown IPC command:", command);
+
+            default: console.warn("Unknown IPC command:", parsedCommand, parsedParameters);
         }
     }
 
     property IpcHandler ipcHandler: IpcHandler {
         target: "ambxst"
 
-        function run(command: string) {
-            root.run(command);
+        function run(command) {
+            const args = Array.prototype.slice.call(arguments, 1);
+            root.run(command, args);
         }
     }
 
@@ -126,7 +168,7 @@ QtObject {
 
         GlobalStates.widgetsTabCurrentIndex = tabIndex;
         GlobalStates.launcherSearchText = prefix;
-        
+
         if (!isActive) {
             Visibilities.setActiveModule("launcher");
         }
@@ -134,7 +176,7 @@ QtObject {
 
     function toggleDashboardTab(tabIndex) {
         const isActive = Visibilities.currentActiveModule === "dashboard";
-        
+
         // Special handling for widgets tab (launcher)
         if (tabIndex === 0) {
             if (isActive && GlobalStates.dashboardCurrentTab === 0 && GlobalStates.launcherSearchText === "") {
@@ -142,7 +184,7 @@ QtObject {
                 Visibilities.setActiveModule("");
                 return;
             }
-            
+
             // Otherwise, always go to launcher (clear any prefix and ensure tab 0)
             GlobalStates.dashboardCurrentTab = 0;
             GlobalStates.launcherSearchText = "";
@@ -152,7 +194,7 @@ QtObject {
             }
             return;
         }
-        
+
         // For other tabs, normal toggle behavior
         if (isActive && GlobalStates.dashboardCurrentTab === tabIndex) {
             Visibilities.setActiveModule("");
@@ -167,7 +209,7 @@ QtObject {
 
     function toggleDashboardWithPrefix(prefix) {
         const isActive = Visibilities.currentActiveModule === "dashboard";
-        
+
         if (isActive && GlobalStates.dashboardCurrentTab === 0 && GlobalStates.launcherSearchText === prefix) {
             Visibilities.setActiveModule("");
             GlobalStates.clearLauncherState();
@@ -175,7 +217,7 @@ QtObject {
         }
 
         GlobalStates.dashboardCurrentTab = 0;
-        
+
         if (!isActive) {
             Visibilities.setActiveModule("dashboard");
             Qt.callLater(() => {

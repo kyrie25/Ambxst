@@ -296,7 +296,7 @@ PanelWindow {
                 let perScreen = Object.assign({}, wallpaperConfig.adapter.perScreenWallpapers || {});
                 perScreen[targetScreen] = path;
                 wallpaperConfig.adapter.perScreenWallpapers = perScreen;
-                
+
                 // If this targetScreen is the primary screen, it must update currentWall
                 // because currentWall is exactly the primary monitor fallback.
                 let isPrimary = false;
@@ -328,7 +328,7 @@ PanelWindow {
             GlobalStates.wallpaperManager.clearPerScreenWallpaper(targetScreen);
             return;
         }
-        
+
         console.log("Clearing per-screen wallpaper for:", targetScreen);
         let perScreen = Object.assign({}, wallpaperConfig.adapter.perScreenWallpapers || {});
         if (perScreen[targetScreen]) {
@@ -423,7 +423,7 @@ PanelWindow {
             }
 
             // Ejecutar matugen con configuración específica
-            var commandWithConfig = ["matugen", "image", matugenSource, "-c", decodeURIComponent(Qt.resolvedUrl("../../../../assets/matugen/config.toml").toString().replace("file://", "")), "-t", wallpaperConfig.adapter.matugenScheme];
+            var commandWithConfig = ["matugen", "image", matugenSource, "--source-color-index", "0", "-c", decodeURIComponent(Qt.resolvedUrl("../../../../assets/matugen/config.toml").toString().replace("file://", "")), "-t", wallpaperConfig.adapter.matugenScheme];
             if (Config.theme.lightMode) {
                 commandWithConfig.push("-m", "light");
             }
@@ -431,7 +431,7 @@ PanelWindow {
             matugenProcessWithConfig.running = true;
 
             // Ejecutar matugen normal en paralelo
-            var commandNormal = ["matugen", "image", matugenSource, "-t", wallpaperConfig.adapter.matugenScheme];
+            var commandNormal = ["matugen", "image", matugenSource, "--source-color-index", "0", "-t", wallpaperConfig.adapter.matugenScheme];
             if (Config.theme.lightMode) {
                 commandNormal.push("-m", "light");
             }

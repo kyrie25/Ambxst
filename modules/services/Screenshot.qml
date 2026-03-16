@@ -16,24 +16,26 @@ QtObject {
     signal lensImageReady(string path)
     signal imageSaved(string path) // New signal for Overlay
 
+    property var captureModes: ["region", "window", "screen"]
+
     property string tempPathBase: "/tmp/ambxst_freeze"
     property string cropPath: "/tmp/ambxst_crop.png"
     property string lensPath: "/tmp/image.png"
-    
+
     property string captureMode: "normal"
-    
+
     property string screenshotsDir: ""
     property string finalPath: ""
-    
+
     property var _activeWorkspaceIds: []
     property var monitors: [] // List of monitor objects
-    
+
     // Selection state to synchronize UI across monitors
     property int selectionX: 0
     property int selectionY: 0
     property int selectionW: 0
     property int selectionH: 0
-    
+
     // Store monitor scale factor for coordinate scaling
     property real monitorScale: 1.0
 
@@ -78,7 +80,7 @@ QtObject {
     property Process freezeProcess: Process {
         id: freezeProcess
         // Command built dynamically
-        command: [] 
+        command: []
         onExited: exitCode => {
             root._freezing = false; // Reset lock flag
             if (exitCode === 0) {
@@ -97,7 +99,7 @@ QtObject {
             }
         }
     }
-    
+
     // Process for fetching monitors
     property Process monitorsProcess: Process {
         id: monitorsProcess
@@ -166,7 +168,7 @@ QtObject {
                         at: [c.metadata ? c.metadata.x : 0, c.metadata ? c.metadata.y : 0],
                         size: [c.metadata ? c.metadata.width : 0, c.metadata ? c.metadata.height : 0]
                     }))
-                    
+
                     var filteredClients = normalizedClients.filter(c => {
                         return c.pinned || (activeIds.length > 0 && activeIds.includes(c.workspace.id))
                     })
@@ -186,7 +188,7 @@ QtObject {
             if (exitCode === 0) {
                 if (root.captureMode === "lens") {
                     root.runLensScript()
-                    root.captureMode = "normal" 
+                    root.captureMode = "normal"
                 } else {
                     copyProcess.running = true
                     root.imageSaved(root.finalPath)
@@ -249,25 +251,25 @@ QtObject {
              });
         }
         root.monitors = mappedMonitors;
-        
+
         // Trigger freeze immediately
         root.executeFreezeBatch();
 
 		root.fetchWindows();
     }
-    
+
     function fetchWindows() {
         // Start fetching full metadata (workspaces) for Window Mode
         monitorsProcess.running = true
     }
-    
+
     function executeFreezeBatch() {
         if (root.monitors.length === 0) {
             console.warn("Screenshot: No monitors found to freeze");
             _freezing = false;
             return;
         }
-        
+
         // Build a single command string to run grim for all monitors in parallel
         // cmd: grim -o output1 path1 & grim -o output2 path2 & wait
         var cmd = "";
@@ -278,7 +280,7 @@ QtObject {
             cmd += `grim -o "${m.name}" "${path}" & `;
         }
         cmd += "wait";
-        
+
         console.log("Screenshot: Executing freeze batch: " + cmd);
         freezeProcess.command = ["bash", "-c", cmd];
         freezeProcess.running = true;
@@ -287,11 +289,11 @@ QtObject {
     function getTimestamp() {
         var d = new Date()
         var pad = (n) => n < 10 ? '0' + n : n;
-        return d.getFullYear() + '-' + 
-               pad(d.getMonth() + 1) + '-' + 
-               pad(d.getDate()) + '-' + 
-               pad(d.getHours()) + '-' + 
-               pad(d.getMinutes()) + '-' + 
+        return d.getFullYear() + '-' +
+               pad(d.getMonth() + 1) + '-' +
+               pad(d.getDate()) + '-' +
+               pad(d.getHours()) + '-' +
+               pad(d.getMinutes()) + '-' +
                pad(d.getSeconds());
     }
 
@@ -307,7 +309,7 @@ QtObject {
             var filename = "Screenshot_" + getTimestamp() + ".png"
             root.finalPath = root.screenshotsDir + "/" + filename
         }
-        
+
         // Find monitor for these global logical coordinates
         var m = null;
         if (root.monitors.length > 0) {
@@ -332,30 +334,30 @@ QtObject {
                        y >= mon.y && y < (mon.y + logicalH);
             });
         }
-        
+
         if (!m) {
             console.warn("Screenshot: Could not find monitor for region " + x + "," + y);
             // Fallback? Try to use first monitor?
             if (root.monitors.length > 0) m = root.monitors[0];
-            else return; 
+            else return;
         }
-        
+
         // Calculate coordinates relative to that monitor
         var localX = x - m.x;
         var localY = y - m.y;
-        
+
         // Convert to physical coordinates for cropping the PHYSICAL grim output for THIS monitor
         // Grim output for a single monitor is just size WxH (physical).
         var physX = Math.round(localX * m.scale);
         var physY = Math.round(localY * m.scale);
         var physW = Math.round(w * m.scale);
         var physH = Math.round(h * m.scale);
-        
+
         console.log(`Screenshot: Cropping on monitor ${m.name} (Scale ${m.scale})`);
         console.log(`Screenshot: Logical Local: ${localX},${localY} ${w}x${h} -> Physical: ${physX},${physY} ${physW}x${physH}`);
-        
+
         var srcPath = root.tempPathBase + "_" + m.name + ".png";
-        
+
         // convert input.png -crop WxH+X+Y output.png
         var geom = `${physW}x${physH}+${physX}+${physY}`;
         cropProcess.command = ["convert", srcPath, "-crop", geom, root.finalPath];
@@ -378,28 +380,28 @@ QtObject {
         // But users usually want "Current Screen" if they click on a screen.
         // However, if we want ALL screens stitched, we'd need to stitch them ourselves now.
         // Let's assume the user clicked on a specific screen, so we capture THAT screen.
-        // We need to know WHICH screen was clicked. 
+        // We need to know WHICH screen was clicked.
         // But processFullscreen() takes no arguments currently.
         // We should modify it to take a monitor name or coords.
-        
+
         // For now, let's implement "Capture Monitor under Mouse" if possible?
         // Or if we can't easily, maybe we just stitch them all?
-        // Stitching is complex. 
-        
+        // Stitching is complex.
+
         // Let's try to infer from mouse position? We don't have it here.
         // Let's assume the focused monitor?
         // Let's default to primary or first monitor for safety if no context provided.
         // Ideally, we update ScreenshotTool to pass the screen name.
-        
+
         // TEMPORARY: Just capture the first monitor to verify the pipeline works.
         // Or better: Re-run grim without -o to get the full stitched image again?
         // That duplicates work but is safest for "Full Screenshot".
-        
+
         var cmd = ["grim", root.finalPath];
         cropProcess.command = cmd;
         cropProcess.running = true;
     }
-    
+
     // Overloaded processFullscreen to take a screen name (for "Screen" mode on specific monitor)
     function processMonitorScreen(monitorName) {
          if (root.captureMode === "lens") {
@@ -411,7 +413,7 @@ QtObject {
             var filename = "Screenshot_" + getTimestamp() + ".png"
             root.finalPath = root.screenshotsDir + "/" + filename
         }
-        
+
         var srcPath = root.tempPathBase + "_" + monitorName + ".png";
         cropProcess.command = ["cp", srcPath, root.finalPath];
         cropProcess.running = true;
@@ -436,7 +438,7 @@ QtObject {
         verifyImageProcess.command = ["test", "-f", root.lensPath];
         verifyImageProcess.running = true;
     }
-    
+
     property Process verifyImageProcess: Process {
         id: verifyImageProcess
         onExited: exitCode => {
