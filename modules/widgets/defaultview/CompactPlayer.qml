@@ -127,10 +127,28 @@ Item {
     // Cava visualizer support
     readonly property bool cavaEnabled: (Config.notch.showCavaOnMedia ?? false) && isPlaying && player !== null
     property var cavaBars: []
+    property bool cavaRestartHold: false
+
+    Timer {
+        id: cavaRestartTimer
+        interval: 40
+        repeat: false
+        onTriggered: compactPlayer.cavaRestartHold = false
+    }
+
+    Connections {
+        target: Config.notch
+        function onCavaBarsChanged() {
+            if (!compactPlayer.cavaEnabled || !compactPlayer.visible)
+                return;
+            compactPlayer.cavaRestartHold = true;
+            cavaRestartTimer.restart();
+        }
+    }
 
     Process {
         id: cavaProcess
-        running: compactPlayer.cavaEnabled && compactPlayer.visible
+        running: compactPlayer.cavaEnabled && compactPlayer.visible && !compactPlayer.cavaRestartHold
         command: [
             "bash", "-c",
             "printf '[general]\\nbars=" + (Config.notch.cavaBars ?? 16) + "\\n[output]\\nmethod=raw\\nraw_target=/dev/stdout\\ndata_format=ascii\\nascii_max_range=7\\nbar_delimiter=59\\nframe_delimiter=10\\n' > /tmp/ambxst-cava.ini && exec cava -p /tmp/ambxst-cava.ini"
@@ -142,7 +160,7 @@ Item {
                 const trimmed = data.trim();
                 if (trimmed === "") return;
                 const parts = trimmed.split(";");
-                const parsed = parts.map(x => parseInt(x) || 0);
+                const parsed = parts.map(x => parseInt(x, 10) || 0);
                 if (parsed.length > 0) {
                     compactPlayer.cavaBars = parsed;
                 }
