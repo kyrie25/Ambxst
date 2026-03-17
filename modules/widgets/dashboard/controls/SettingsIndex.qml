@@ -12,25 +12,25 @@ QtObject {
 
     // Main Sections:
     // 0: Network, 1: Bluetooth, 2: Mixer, 3: Effects, 4: Theme, 5: Binds, 6: System, 7: Compositor, 8: Ambxst
-    
+
     property var dynamicItems: []
 
     readonly property var staticItems: [
         // --- Network ---
         { label: "Network", keywords: "internet wifi connection ethernet ip", section: 0, subSection: "", subLabel: "", icon: Icons.wifiHigh, isIcon: true },
-        
+
         // --- Bluetooth ---
         { label: "Bluetooth", keywords: "devices pairing connect", section: 1, subSection: "", subLabel: "", icon: Icons.bluetooth, isIcon: true },
-        
+
         // --- Mixer ---
         { label: "Audio Mixer", keywords: "sound volume output input mic speaker", section: 2, subSection: "", subLabel: "", icon: Icons.faders, isIcon: true },
-        
+
         // --- Effects ---
         { label: "Audio Effects", keywords: "equalizer bass treble easyeffects", section: 3, subSection: "", subLabel: "", icon: Icons.waveform, isIcon: true },
-        
+
         // --- Theme ---
         { label: "Theme", keywords: "appearance look style customize", section: 4, subSection: "", subLabel: "Theme", icon: Icons.paintBrush, isIcon: true },
-        
+
         // Theme > General
         { label: "Wallpapers", keywords: "background image picture desktop", section: 4, subSection: "general", subLabel: "Theme > General", icon: Icons.image, isIcon: true },
         { label: "Tint Icons", keywords: "color icons tint monochrome", section: 4, subSection: "general", subLabel: "Theme > General", icon: Icons.palette, isIcon: true },
@@ -38,7 +38,7 @@ QtObject {
         { label: "Animation Duration", keywords: "speed fast slow transition", section: 4, subSection: "general", subLabel: "Theme > General", icon: Icons.clock, isIcon: true },
         { label: "UI Font", keywords: "typography text family size", section: 4, subSection: "general", subLabel: "Theme > General", icon: Icons.textT, isIcon: true },
         { label: "Roundness", keywords: "radius border curve", section: 4, subSection: "general", subLabel: "Theme > General", icon: Icons.circle, isIcon: true },
-        
+
         // Theme > Shadow
         { label: "Shadow Opacity", keywords: "darkness alpha transparency", section: 4, subSection: "shadow", subLabel: "Theme > Shadow", icon: Icons.drop, isIcon: true },
         { label: "Shadow Blur", keywords: "softness diffusion", section: 4, subSection: "shadow", subLabel: "Theme > Shadow", icon: Icons.drop, isIcon: true },
@@ -80,10 +80,10 @@ QtObject {
         { label: "Lens Keybind", keywords: "magnifier zoom shortcut", section: 5, subSection: "", subLabel: "Binds > Ambxst", icon: Icons.magnifyingGlass, isIcon: true },
         { label: "Reload Keybind", keywords: "refresh restart shortcut", section: 5, subSection: "", subLabel: "Binds > Ambxst", icon: Icons.arrowCounterClockwise, isIcon: true },
         { label: "Quit Keybind", keywords: "exit close shortcut", section: 5, subSection: "", subLabel: "Binds > Ambxst", icon: Icons.signOut, isIcon: true },
-        
+
         // --- System ---
         { label: "System", keywords: "hardware info resources cpu ram", section: 6, subSection: "", subLabel: "System", icon: Icons.circuitry, isIcon: true },
-        
+
         // System > Prefixes
         { label: "Prefixes", keywords: "shortcuts launcher quick actions", section: 6, subSection: "prefixes", subLabel: "System > Prefixes", icon: Icons.keyboard, isIcon: true },
         { label: "Clipboard Prefix", keywords: "cc copy paste launcher", section: 6, subSection: "prefixes", subLabel: "System > Prefixes", icon: Icons.keyboard, isIcon: true },
@@ -91,7 +91,7 @@ QtObject {
         { label: "Tmux Prefix", keywords: "tt terminal launcher", section: 6, subSection: "prefixes", subLabel: "System > Prefixes", icon: Icons.keyboard, isIcon: true },
         { label: "Wallpapers Prefix", keywords: "ww background launcher", section: 6, subSection: "prefixes", subLabel: "System > Prefixes", icon: Icons.keyboard, isIcon: true },
         { label: "Notes Prefix", keywords: "nn note launcher", section: 6, subSection: "prefixes", subLabel: "System > Prefixes", icon: Icons.keyboard, isIcon: true },
-        
+
         // System > Weather
         { label: "Weather Location", keywords: "city country place gps", section: 6, subSection: "weather", subLabel: "System > Weather", icon: Icons.mapPin, isIcon: true },
         { label: "Temperature Unit", keywords: "celsius fahrenheit scale", section: 6, subSection: "weather", subLabel: "System > Weather", icon: Icons.thermometer, isIcon: true },
@@ -100,24 +100,29 @@ QtObject {
         { label: "Blur Transition", keywords: "animation speed performance effect", section: 6, subSection: "performance", subLabel: "System > Performance", icon: Icons.lightning, isIcon: true },
         { label: "Window Preview", keywords: "thumbnail overview alt-tab", section: 6, subSection: "performance", subLabel: "System > Performance", icon: Icons.windowsLogo, isIcon: true },
         { label: "Wavy Line", keywords: "animated wave effect performance", section: 6, subSection: "performance", subLabel: "System > Performance", icon: Icons.lightning, isIcon: true },
-        
+
         // System > Resources
         { label: "System Resources", keywords: "cpu ram memory usage monitor", section: 6, subSection: "resources", subLabel: "System > Resources", icon: Icons.circuitry, isIcon: true },
-        
+
         // System > Idle
         { label: "Idle Settings", keywords: "screen lock timeout sleep suspend", section: 6, subSection: "idle", subLabel: "System > Idle", icon: Icons.moon, isIcon: true },
         { label: "Lock Command", keywords: "ambxst lock screen idle", section: 6, subSection: "idle", subLabel: "System > Idle", icon: Icons.moon, isIcon: true },
         { label: "Before Sleep", keywords: "loginctl lock-session idle", section: 6, subSection: "idle", subLabel: "System > Idle", icon: Icons.moon, isIcon: true },
         { label: "After Sleep", keywords: "screen on resume idle", section: 6, subSection: "idle", subLabel: "System > Idle", icon: Icons.moon, isIcon: true },
         { label: "Idle Listener", keywords: "timeout brightness screen off suspend", section: 6, subSection: "idle", subLabel: "System > Idle", icon: Icons.moon, isIcon: true },
-        
+
+        // System > Night Light
+        { label: "Night Light", keywords: "blue light filter hyprsunset warm screen", section: 6, subSection: "nightlight", subLabel: "System > Night Light", icon: Icons.nightLight, isIcon: true },
+        { label: "Night Light Temperature", keywords: "warm cool kelvin color hyprsunset", section: 6, subSection: "nightlight", subLabel: "System > Night Light", icon: Icons.nightLight, isIcon: true },
+        { label: "Night Light Gamma", keywords: "brightness dim perceived hyprsunset", section: 6, subSection: "nightlight", subLabel: "System > Night Light", icon: Icons.nightLight, isIcon: true },
+
         // --- Compositor ---
         { label: "Compositor", keywords: "compositor window manager wm", section: 7, subSection: "", subLabel: "Compositor", icon: Icons.compositor, isIcon: true },
-        
+
         // Compositor > AxctlService > General
         { label: "Border Size", keywords: "width thickness stroke", section: 7, subSection: "general", subLabel: "Compositor > AxctlService", icon: Icons.frameCorners, isIcon: true },
         { label: "Window Gaps", keywords: "spacing margin padding", section: 7, subSection: "general", subLabel: "Compositor > AxctlService", icon: Icons.squaresFour, isIcon: true },
-        
+
         // Compositor > AxctlService > Colors
         { label: "Border Colors", keywords: "active inactive focus", section: 7, subSection: "colors", subLabel: "Compositor > AxctlService", icon: Icons.palette, isIcon: true },
 
@@ -146,7 +151,7 @@ QtObject {
 
         // --- Ambxst / Shell ---
         { label: "Ambxst", keywords: "about info credits version shell", section: 8, subSection: "", subLabel: "", icon: Qt.resolvedUrl("../../../../assets/ambxst/ambxst-icon.svg"), isIcon: false },
-        
+
         // Ambxst > Bar
         { label: "Bar", keywords: "panel taskbar top bottom", section: 8, subSection: "bar", subLabel: "Ambxst > Bar", icon: Icons.layout, isIcon: true },
         { label: "Bar Position", keywords: "top bottom left right edge", section: 8, subSection: "bar", subLabel: "Ambxst > Bar", icon: Icons.layout, isIcon: true },
@@ -165,10 +170,10 @@ QtObject {
         { label: "Show Running Indicators", keywords: "dots active apps", section: 8, subSection: "bar", subLabel: "Ambxst > Bar", icon: Icons.layout, isIcon: true },
         { label: "Show Overview Button", keywords: "workspace switcher", section: 8, subSection: "bar", subLabel: "Ambxst > Bar", icon: Icons.layout, isIcon: true },
         { label: "Bar Screens", keywords: "monitor display eDP", section: 8, subSection: "bar", subLabel: "Ambxst > Bar", icon: Icons.layout, isIcon: true },
-        
+
         // Ambxst > Notch
         { label: "Notch", keywords: "island dynamic island center", section: 8, subSection: "notch", subLabel: "Ambxst > Notch", icon: Icons.layout, isIcon: true },
-        
+
         // Ambxst > Workspaces
         { label: "Workspaces", keywords: "virtual desktop spaces", section: 8, subSection: "workspaces", subLabel: "Ambxst > Workspaces", icon: Icons.squaresFour, isIcon: true },
         { label: "Workspaces Shown", keywords: "number count visible", section: 8, subSection: "workspaces", subLabel: "Ambxst > Workspaces", icon: Icons.squaresFour, isIcon: true },
@@ -176,14 +181,14 @@ QtObject {
         { label: "Always Show Numbers", keywords: "workspace label index", section: 8, subSection: "workspaces", subLabel: "Ambxst > Workspaces", icon: Icons.squaresFour, isIcon: true },
         { label: "Show Numbers", keywords: "workspace label index", section: 8, subSection: "workspaces", subLabel: "Ambxst > Workspaces", icon: Icons.squaresFour, isIcon: true },
         { label: "Dynamic Workspaces", keywords: "auto add remove flexible", section: 8, subSection: "workspaces", subLabel: "Ambxst > Workspaces", icon: Icons.squaresFour, isIcon: true },
-        
+
         // Ambxst > Overview
         { label: "Overview", keywords: "expose mission control windows", section: 8, subSection: "overview", subLabel: "Ambxst > Overview", icon: Icons.squaresFour, isIcon: true },
         { label: "Overview Rows", keywords: "grid layout vertical", section: 8, subSection: "overview", subLabel: "Ambxst > Overview", icon: Icons.squaresFour, isIcon: true },
         { label: "Overview Columns", keywords: "grid layout horizontal", section: 8, subSection: "overview", subLabel: "Ambxst > Overview", icon: Icons.squaresFour, isIcon: true },
         { label: "Overview Scale", keywords: "zoom size preview", section: 8, subSection: "overview", subLabel: "Ambxst > Overview", icon: Icons.squaresFour, isIcon: true },
         { label: "Overview Workspace Spacing", keywords: "gap margin distance", section: 8, subSection: "overview", subLabel: "Ambxst > Overview", icon: Icons.squaresFour, isIcon: true },
-        
+
         // Ambxst > Dock
         { label: "Dock", keywords: "taskbar launcher apps favorites", section: 8, subSection: "dock", subLabel: "Ambxst > Dock", icon: Icons.layout, isIcon: true },
         { label: "Dock Enabled", keywords: "show hide toggle", section: 8, subSection: "dock", subLabel: "Ambxst > Dock", icon: Icons.layout, isIcon: true },
@@ -195,17 +200,17 @@ QtObject {
         { label: "Dock Margin", keywords: "edge distance offset", section: 8, subSection: "dock", subLabel: "Ambxst > Dock", icon: Icons.layout, isIcon: true },
         { label: "Dock Hover Region Height", keywords: "trigger area pixels", section: 8, subSection: "dock", subLabel: "Ambxst > Dock", icon: Icons.layout, isIcon: true },
         { label: "Dock Pinned on Startup", keywords: "show visible default", section: 8, subSection: "dock", subLabel: "Ambxst > Dock", icon: Icons.layout, isIcon: true },
-        
+
         // Ambxst > Lockscreen
         { label: "Lockscreen", keywords: "lock screen password login", section: 8, subSection: "lockscreen", subLabel: "Ambxst > Lockscreen", icon: Icons.lock, isIcon: true },
-        
+
         // Ambxst > Desktop
         { label: "Desktop", keywords: "icons wallpaper home", section: 8, subSection: "desktop", subLabel: "Ambxst > Desktop", icon: Icons.layout, isIcon: true },
         { label: "Desktop Enabled", keywords: "show hide icons toggle", section: 8, subSection: "desktop", subLabel: "Ambxst > Desktop", icon: Icons.layout, isIcon: true },
         { label: "Desktop Icon Size", keywords: "width height pixels", section: 8, subSection: "desktop", subLabel: "Ambxst > Desktop", icon: Icons.layout, isIcon: true },
         { label: "Desktop Vertical Spacing", keywords: "gap margin", section: 8, subSection: "desktop", subLabel: "Ambxst > Desktop", icon: Icons.layout, isIcon: true },
         { label: "Desktop Text Color", keywords: "label font", section: 8, subSection: "desktop", subLabel: "Ambxst > Desktop", icon: Icons.palette, isIcon: true },
-        
+
         // Ambxst > System
         { label: "Shell System", keywords: "config settings ambxst", section: 8, subSection: "system", subLabel: "Ambxst > System", icon: Icons.circuitry, isIcon: true }
     ]
@@ -216,7 +221,7 @@ QtObject {
         // Simple deduplication based on label + section
         let currentLabels = new Set(items.map(i => i.section + ":" + i.label));
         let uniqueNew = [];
-        
+
         for (let i = 0; i < newItems.length; i++) {
             let item = newItems[i];
             let key = item.section + ":" + item.label;
@@ -225,7 +230,7 @@ QtObject {
                 currentLabels.add(key);
             }
         }
-        
+
         if (uniqueNew.length > 0) {
             dynamicItems = dynamicItems.concat(uniqueNew);
         }

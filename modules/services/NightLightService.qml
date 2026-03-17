@@ -8,88 +8,186 @@ Singleton {
     id: root
 
     property bool active: StateService.get("nightLight", false)
-    
-    property Process wlsunsetProcess: Process {
-        command: ["wlsunset"]
+    property int temperature: StateService.get("nightLightTemperature", 4500)
+    property int gamma: StateService.get("nightLightGamma", 100)
+
+    property bool _hyprsunsetRunning: false
+    property bool _pendingApply: false
+
+    // Start hyprsunset daemon
+    property Process startProcess: Process {
+        command: ["hyprsunset"]
         running: false
-        stdout: SplitParser {
-            onRead: (data) => {
-                // wlsunset output cuando está corriendo
-                if (data) {
-                    root.active = true
+        onStarted: {
+            root._hyprsunsetRunning = true
+            // Wait briefly for the daemon to initialize before sending IPC
+            ipcDelayTimer.start()
+        }
+        onExited: (code) => {
+            root._hyprsunsetRunning = false
+        }
+    }
+
+    Timer {
+        id: ipcDelayTimer
+        interval: 500
+        repeat: false
+        onTriggered: {
+            if (root._pendingApply) {
+                root._pendingApply = false
+                root.applySettings()
+            }
+        }
+    }
+
+    // Check if hyprsunset is already running
+    property Process checkProcess: Process {
+        command: ["pgrep", "-x", "hyprsunset"]
+        running: false
+        onExited: (code) => {
+            root._hyprsunsetRunning = (code === 0)
+            if (root.active) {
+                if (!root._hyprsunsetRunning) {
+                    root._pendingApply = true
+                    root.ensureRunning()
+                } else {
+                    root.applySettings()
                 }
             }
         }
-        onStarted: {
-            root.active = true
-        }
-        onExited: (code) => {
-            root.active = false
-        }
     }
-    
+
+    // Apply temperature via hyprctl IPC
+    property Process setTemperatureProcess: Process {
+        running: false
+        stdout: SplitParser {}
+    }
+
+    // Apply gamma via hyprctl IPC
+    property Process setGammaProcess: Process {
+        running: false
+        stdout: SplitParser {}
+    }
+
+    // Reset to identity (disable filter)
+    property Process identityProcess: Process {
+        running: false
+        stdout: SplitParser {}
+    }
+
+    // Kill hyprsunset daemon
     property Process killProcess: Process {
-        command: ["pkill", "wlsunset"]
         running: false
-        onExited: (code) => {
-            root.active = false
+        stdout: SplitParser {}
+        onExited: {
+            root._hyprsunsetRunning = false
+            if (root.active) {
+                root._pendingApply = true
+                root.ensureRunning()
+            }
         }
     }
-    
-    property Process checkRunningProcess: Process {
-        command: ["pgrep", "wlsunset"]
-        running: false
-        onExited: (code) => {
-            const isRunning = code === 0
-            
-            // If state says active but not running, start it
-            if (root.active && !isRunning) {
-                console.log("NightLightService: Starting wlsunset (state was active but not running)")
-                wlsunsetProcess.running = true
-            } 
-            // If state says inactive but running, kill it
-            else if (!root.active && isRunning) {
-                console.log("NightLightService: Stopping wlsunset (state was inactive but running)")
-                killProcess.running = true
-            }
+
+    function ensureRunning() {
+        if (!root._hyprsunsetRunning) {
+            startProcess.running = true
         }
     }
 
     function toggle() {
-        if (active) {
-            killProcess.running = true
+        root.active = !root.active
+        if (root.active) {
+            if (!root._hyprsunsetRunning) {
+                root._pendingApply = true
+                root.ensureRunning()
+            } else {
+                applySettings()
+            }
         } else {
-            wlsunsetProcess.running = true
+            identityProcess.command = ["hyprctl", "hyprsunset", "identity"]
+            identityProcess.running = true
         }
     }
-    
+
+    function applySettings() {
+        if (!root._hyprsunsetRunning) {
+            root._pendingApply = true
+            root.ensureRunning()
+            return
+        }
+
+        setTemperatureProcess.command = ["hyprctl", "hyprsunset", "temperature", root.temperature.toString()]
+        setTemperatureProcess.running = true
+
+        if (root.gamma !== 100) {
+            setGammaProcess.command = ["hyprctl", "hyprsunset", "gamma", root.gamma.toString()]
+            setGammaProcess.running = true
+        }
+    }
+
+    function setTemperature(temp) {
+        root.temperature = temp
+        if (root.active && root._hyprsunsetRunning) {
+            setTemperatureProcess.command = ["hyprctl", "hyprsunset", "temperature", temp.toString()]
+            setTemperatureProcess.running = true
+        }
+    }
+
+    function setGamma(g) {
+        root.gamma = g
+        if (root.active && root._hyprsunsetRunning) {
+            setGammaProcess.command = ["hyprctl", "hyprsunset", "gamma", g.toString()]
+            setGammaProcess.running = true
+        }
+    }
+
+    function restartDaemon() {
+        killProcess.command = ["pkill", "-x", "hyprsunset"]
+        killProcess.running = true
+    }
+
     function syncState() {
-        checkRunningProcess.running = true
+        checkProcess.running = true
     }
 
     onActiveChanged: {
         if (StateService.initialized) {
-            StateService.set("nightLight", active);
+            StateService.set("nightLight", active)
+        }
+    }
+
+    onTemperatureChanged: {
+        if (StateService.initialized) {
+            StateService.set("nightLightTemperature", temperature)
+        }
+    }
+
+    onGammaChanged: {
+        if (StateService.initialized) {
+            StateService.set("nightLightGamma", gamma)
         }
     }
 
     Connections {
         target: StateService
         function onStateLoaded() {
-            root.active = StateService.get("nightLight", false);
-            root.syncState();
+            root.active = StateService.get("nightLight", false)
+            root.temperature = StateService.get("nightLightTemperature", 4500)
+            root.gamma = StateService.get("nightLightGamma", 100)
+            root.syncState()
         }
     }
 
-    // Auto-initialize on creation
     Timer {
         interval: 100
         running: true
         repeat: false
         onTriggered: {
             if (StateService.initialized) {
-                root.active = StateService.get("nightLight", false);
-                root.syncState();
+                root.active = StateService.get("nightLight", false)
+                root.temperature = StateService.get("nightLightTemperature", 4500)
+                root.gamma = StateService.get("nightLightGamma", 100)
+                root.syncState()
             }
         }
     }
