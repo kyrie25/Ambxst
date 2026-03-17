@@ -1314,7 +1314,234 @@ Item {
                     // Bottom spacing
                     Item {
                         Layout.fillWidth: true
-                        Layout.preferredHeight: 16
+                        spacing: 8
+
+                        Text {
+                            text: "Night Light"
+                            font.family: Config.theme.font
+                            font.pixelSize: Styling.fontSize(-1)
+                            font.weight: Font.Medium
+                            color: Colors.overSurfaceVariant
+                            Layout.bottomMargin: -4
+                        }
+
+                        Text {
+                            text: "Blue light filter powered by hyprsunset"
+                            font.family: Config.theme.font
+                            font.pixelSize: Styling.fontSize(-2)
+                            color: Colors.overSurfaceVariant
+                            opacity: 0.7
+                        }
+
+                        // Enable toggle
+                        ToggleRow {
+                            Layout.fillWidth: true
+                            label: "Enabled"
+                            description: "Toggle blue light filter"
+                            checked: NightLightService.active
+                            onToggled: checked => {
+                                NightLightService.toggle()
+                            }
+                        }
+
+                        // Temperature slider
+                        ColumnLayout {
+                            Layout.fillWidth: true
+                            spacing: 4
+
+                            RowLayout {
+                                Layout.fillWidth: true
+                                spacing: 8
+
+                                Text {
+                                    text: "Temperature"
+                                    font.family: Config.theme.font
+                                    font.pixelSize: Styling.fontSize(0)
+                                    color: Colors.overBackground
+                                    Layout.fillWidth: true
+                                }
+
+                                Text {
+                                    text: tempSlider.displayValue + "K"
+                                    font.family: Config.theme.monoFont
+                                    font.pixelSize: Styling.monoFontSize(0)
+                                    color: Colors.overSurfaceVariant
+                                }
+                            }
+
+                            StyledSlider {
+                                id: tempSlider
+                                Layout.fillWidth: true
+                                Layout.preferredHeight: 20
+                                progressColor: Styling.srItem("overprimary")
+                                scroll: true
+                                stepSize: 0.01
+                                snapMode: "always"
+                                tooltipText: displayValue + "K"
+
+                                property int displayValue: Math.round(1000 + value * 5000)
+
+                                readonly property int configValue: NightLightService.temperature
+
+                                onConfigValueChanged: {
+                                    const normalized = (configValue - 1000) / 5000
+                                    if (Math.abs(value - normalized) > 0.001) {
+                                        value = normalized
+                                    }
+                                }
+
+                                Component.onCompleted: value = (configValue - 1000) / 5000
+
+                                onValueChanged: {
+                                    const newTemp = Math.round(1000 + value * 5000)
+                                    if (newTemp !== NightLightService.temperature) {
+                                        NightLightService.setTemperature(newTemp)
+                                    }
+                                }
+                            }
+
+                            RowLayout {
+                                Layout.fillWidth: true
+                                Text {
+                                    text: "Warm"
+                                    font.family: Config.theme.font
+                                    font.pixelSize: Styling.fontSize(-3)
+                                    color: Colors.overSurfaceVariant
+                                    opacity: 0.5
+                                }
+                                Item { Layout.fillWidth: true }
+                                Text {
+                                    text: "Cool"
+                                    font.family: Config.theme.font
+                                    font.pixelSize: Styling.fontSize(-3)
+                                    color: Colors.overSurfaceVariant
+                                    opacity: 0.5
+                                }
+                            }
+                        }
+
+                        // Gamma slider
+                        ColumnLayout {
+                            Layout.fillWidth: true
+                            spacing: 4
+
+                            RowLayout {
+                                Layout.fillWidth: true
+                                spacing: 8
+
+                                Text {
+                                    text: "Gamma"
+                                    font.family: Config.theme.font
+                                    font.pixelSize: Styling.fontSize(0)
+                                    color: Colors.overBackground
+                                    Layout.fillWidth: true
+                                }
+
+                                Text {
+                                    text: gammaSlider.displayValue + "%"
+                                    font.family: Config.theme.monoFont
+                                    font.pixelSize: Styling.monoFontSize(0)
+                                    color: Colors.overSurfaceVariant
+                                }
+                            }
+
+                            StyledSlider {
+                                id: gammaSlider
+                                Layout.fillWidth: true
+                                Layout.preferredHeight: 20
+                                progressColor: Styling.srItem("overprimary")
+                                scroll: true
+                                stepSize: 0.01
+                                snapMode: "always"
+                                tooltipText: displayValue + "%"
+
+                                property int displayValue: Math.round(value * 150)
+
+                                readonly property int configValue: NightLightService.gamma
+
+                                onConfigValueChanged: {
+                                    const normalized = configValue / 150
+                                    if (Math.abs(value - normalized) > 0.001) {
+                                        value = normalized
+                                    }
+                                }
+
+                                Component.onCompleted: value = configValue / 150
+
+                                onValueChanged: {
+                                    const newGamma = Math.round(value * 150)
+                                    if (newGamma !== NightLightService.gamma) {
+                                        NightLightService.setGamma(newGamma)
+                                    }
+                                }
+                            }
+
+                            RowLayout {
+                                Layout.fillWidth: true
+                                Text {
+                                    text: "Dim"
+                                    font.family: Config.theme.font
+                                    font.pixelSize: Styling.fontSize(-3)
+                                    color: Colors.overSurfaceVariant
+                                    opacity: 0.5
+                                }
+                                Item { Layout.fillWidth: true }
+                                Text {
+                                    text: "Bright"
+                                    font.family: Config.theme.font
+                                    font.pixelSize: Styling.fontSize(-3)
+                                    color: Colors.overSurfaceVariant
+                                    opacity: 0.5
+                                }
+                            }
+                        }
+
+                        RowLayout {
+                            StyledRect {
+                                id: restartDaemonBtn
+                                property bool isHovered: false
+                                variant: isHovered ? "focus" : "common"
+                                Layout.preferredWidth: restartContent.width + 24
+                                Layout.preferredHeight: 36
+                                radius: Styling.radius(-2)
+
+                                Row {
+                                    id: restartContent
+                                    anchors.centerIn: parent
+                                    spacing: 6
+
+                                    Text {
+                                        text: Icons.reboot
+                                        font.family: Icons.font
+                                        font.pixelSize: 14
+                                        color: restartDaemonBtn.item
+                                        anchors.verticalCenter: parent.verticalCenter
+                                    }
+
+                                    Text {
+                                        text: "Restart Daemon"
+                                        font.family: Config.theme.font
+                                        font.pixelSize: Styling.fontSize(0)
+                                        color: restartDaemonBtn.item
+                                        anchors.verticalCenter: parent.verticalCenter
+                                    }
+                                }
+
+                                MouseArea {
+                                    anchors.fill: parent
+                                    hoverEnabled: true
+                                    cursorShape: Qt.PointingHandCursor
+                                    onEntered: restartDaemonBtn.isHovered = true
+                                    onExited: restartDaemonBtn.isHovered = false
+                                    onClicked: NightLightService.restartDaemon()
+                                }
+
+                                StyledToolTip {
+                                    visible: restartDaemonBtn.isHovered
+                                    tooltipText: "Kill and restart the hyprsunset daemon"
+                                }
+                            }
+                        }
                     }
                 }
             }
