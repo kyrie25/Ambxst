@@ -193,7 +193,7 @@ Item {
             Text {
                 id: mediaTitle
                 anchors.centerIn: parent
-                width: parent.width
+                width: parent.width - 32
                 text: compactPlayer.displayedTitle
                 font.family: Config.theme.font
                 font.pixelSize: Styling.fontSize(0)
