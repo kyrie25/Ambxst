@@ -19,6 +19,7 @@ with pkgs; [
   upower
   wl-clip-persist
   wl-clipboard
+  hyprsunset
   wtype
   zbar
   zenity
