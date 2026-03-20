@@ -495,6 +495,9 @@ help | --help | -h)
 	# Force Qt6CT
 	export QT_QPA_PLATFORMTHEME=qt6ct
 
+	# Keep kitty dynamic config in sync with generated theme path
+	export KITTY_CONFIG_DIRECTORY="$HOME/.cache/ambxst"
+
 	# Cache this script's PID before exec (for fast PID lookups in future CLI calls)
 	echo $$ >/tmp/ambxst.pid
 
