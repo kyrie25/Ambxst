@@ -80,12 +80,12 @@ QtObject {
 
         const home = Quickshell.env("HOME")
         const clients = [
-            home + "/.config/Vencord/settings/quickCss.css",
-            home + "/.config/vesktop/settings/quickCss.css",
-            home + "/.var/app/dev.vencord.Vesktop/config/vesktop/settings/quickCss.css",
-            home + "/.config/WebCord/Themes/theme.css",
-            home + "/.var/app/io.github.spacingbat3.webcord/config/WebCord/Themes/theme.css",
-            home + "/.var/app/xyz.armcord.ArmCord/config/ArmCord/themes/theme.css"
+            home + "/.config/Vencord/themes/ambxst.css",
+            home + "/.config/vesktop/themes/ambxst.css",
+            home + "/.var/app/dev.vencord.Vesktop/config/vesktop/themes/ambxst.css",
+            home + "/.config/WebCord/Themes/ambxst.css",
+            home + "/.var/app/io.github.spacingbat3.webcord/config/WebCord/Themes/ambxst.css",
+            home + "/.var/app/xyz.armcord.ArmCord/config/ArmCord/themes/ambxst.css"
         ]
 
         const escape = (str) => {
