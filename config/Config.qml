@@ -114,6 +114,7 @@ Singleton {
             property string monoFont: "Iosevka Nerd Font Mono"
             property int monoFontSize: 14
             property bool tintIcons: false
+            property bool matchSysTrayIconColor: false
             property bool enableCorners: true
             property int animDuration: 300
             property real shadowOpacity: 0.5
@@ -1099,7 +1100,7 @@ Singleton {
             if (current.ambxst.dashboard && typeof current.ambxst.dashboard === "object" && !current.ambxst.dashboard.modifiers) {
                 console.log("Migrating nested ambxst binds to flat structure...");
                 const nested = current.ambxst.dashboard;
-                
+
                 // Map old names to new names and update arguments
                 if (nested.widgets) {
                     current.ambxst.launcher = nested.widgets;
@@ -2992,6 +2993,7 @@ Singleton {
     property string defaultFont: theme.font
     property int animDuration: Services.GameModeService.toggled ? 0 : theme.animDuration
     property bool tintIcons: theme.tintIcons
+    property bool matchSysTrayIconColor: theme.matchSysTrayIconColor
 
     // Handle lightMode changes
     onLightModeChanged: {
@@ -3037,7 +3039,7 @@ Singleton {
                 // Trigger save
                 GlobalStates.markShellChanged();
             }
-        } 
+        }
         // If notch moves top
         else if (notchPosition === "top") {
             // Restore Dock if displaced
@@ -3139,20 +3141,20 @@ Singleton {
 
     function resolveColor(colorValue) {
         if (!colorValue) return "transparent"; // Fallback
-        
+
         if (isHexColor(colorValue)) {
             return colorValue;
         }
-        
+
         // Check Colors singleton
         if (typeof Colors === 'undefined' || !Colors) return "transparent";
-        
-        return Colors[colorValue] || "transparent"; 
+
+        return Colors[colorValue] || "transparent";
     }
 
     function resolveColorWithOpacity(colorValue, opacity) {
         if (!colorValue) return Qt.rgba(0,0,0,0);
-        
+
         const color = isHexColor(colorValue) ? Qt.color(colorValue) : (Colors[colorValue] || Qt.color("transparent"));
         return Qt.rgba(color.r, color.g, color.b, opacity);
     }

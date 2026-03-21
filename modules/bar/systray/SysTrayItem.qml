@@ -172,9 +172,15 @@ MouseArea {
         id: systrayIconTint
         sourceItem: trayIcon
         anchors.fill: trayIcon
-        active: true
+        active: Config.matchSysTrayIconColor
         fullTint: true
         tintColor: Config.tintIcons ? Styling.srItem("overprimary") : Colors.overBackground
+    }
+
+    Tinted {
+        sourceItem: trayIcon
+        anchors.fill: trayIcon
+        active: Config.tintIcons && !Config.matchSysTrayIconColor
     }
 
     StyledToolTip {
