@@ -174,7 +174,7 @@ MouseArea {
         anchors.fill: trayIcon
         active: true
         fullTint: true
-        tintColor: Colors.overBackground
+        tintColor: Config.tintIcons ? Styling.srItem("overprimary") : Colors.overBackground
     }
 
     StyledToolTip {
