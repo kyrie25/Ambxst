@@ -27,6 +27,9 @@ Singleton {
             // Pin
             Config.pinnedApps.apps = pinnedApps.concat([appId]);
         }
+
+        // Persist changes
+        Config.savePinnedApps();
     }
 
     // Get entry

@@ -367,10 +367,7 @@ install_axctl() {
     return
   fi
 
-  has_cmd axctl && {
-    log_info "axctl already installed"
-    return
-  }
+
 
   log_info "Installing axctl..."
   curl -L get.axeni.de/axctl | sh
